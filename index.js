@@ -144,10 +144,34 @@ app.get('/api/reverse-geocode', async (req, res) => {
   }
 });
 
+// 4. Get unique districts for a given state
+app.get('/api/districts', (req, res) => {
+  const { state } = req.query;
+  
+  if (!state) {
+    return res.status(400).json({ success: false, message: 'Please provide a state parameter' });
+  }
+
+  const districts = new Set();
+  facilities.forEach(f => {
+    if (f.state && f.state.toUpperCase() === state.toUpperCase() && f.district) {
+      districts.add(f.district);
+    }
+  });
+
+  res.json({
+    success: true,
+    state: state.toUpperCase(),
+    total: districts.size,
+    data: Array.from(districts).sort()
+  });
+});
+
 app.listen(port, () => {
   console.log(`Node Professional API running on http://localhost:${port}`);
   console.log('Endpoints:');
   console.log(' - GET /api/stats');
   console.log(' - GET /api/facilities?type=CHC');
+  console.log(' - GET /api/districts?state=RAJASTHAN');
   console.log(' - GET /api/reverse-geocode?lat=18.25972&lon=73.12620');
 });
